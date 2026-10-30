@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bảng tuần hoàn hóa học tương tác</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root{--bg:#f5f7fb;--ink:#18243b;--muted:#718096;--line:#e5eaf2;--accent:#5267df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:28px clamp(18px,4vw,56px) 20px;background:linear-gradient(120deg,#18294b,#354f91);color:white}
+.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b9c8f8;font-weight:800}
+h1{font-size:clamp(25px,4vw,38px);margin:8px 0 7px;letter-spacing:-1px}.sub{margin:0;color:#d5def7;font-size:14px}
+main{max-width:1600px;margin:auto;padding:22px clamp(12px,2vw,28px) 40px}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.search{flex:1;min-width:220px;padding:12px 15px;border:1px solid var(--line);border-radius:12px;background:white;font-size:14px;outline:none}
+.search:focus{border-color:#8998f3;box-shadow:0 0 0 3px #5267df18}
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 18px}
+.legend span{font-size:11px;padding:6px 9px;border-radius:20px;background:white;border:1px solid var(--line);color:#48556b}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.table-wrap{overflow-x:auto;padding:4px 2px 14px}
+.periodic{display:grid;grid-template-columns:repeat(18,minmax(54px,1fr));grid-template-rows:repeat(7,88px);gap:5px;min-width:1080px}
+.element{position:relative;border:1px solid #ffffffb8;border-radius:9px;padding:5px 4px;cursor:pointer;text-align:center;transition:transform .16s,box-shadow .16s,filter .16s;min-width:0;color:#25334a}
+.element:hover{transform:translateY(-4px) scale(1.04);z-index:3;box-shadow:0 8px 20px #25334a25;filter:saturate(1.12)}
+.element.selected{outline:3px solid #263b70;outline-offset:1px;z-index:2}
+.num{font-size:9px;opacity:.8;text-align:left}.symbol{font-size:clamp(17px,1.55vw,23px);font-weight:800;line-height:1.2;margin:2px 0}.ename{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mass{font-size:8px;opacity:.7;margin-top:2px}
+.placeholder{border:1px dashed #cbd5e1;border-radius:9px;display:flex;align-items:center;justify-content:center;text-align:center;color:#8290a5;font-size:10px;padding:4px}
+.detail{display:grid;grid-template-columns:1.1fr 2fr;gap:16px;margin-top:14px}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 16px #23304b08}
+.element-head{display:flex;gap:15px;align-items:center}
+.big-symbol{width:88px;height:88px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.big-symbol strong{font-size:39px;line-height:1}.big-symbol small{font-size:11px;margin-top:6px}
+.detail h2{font-size:22px;margin:0 0 4px}.muted{color:var(--muted);font-size:12px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.chip{font-size:11px;padding:6px 9px;border-radius:20px;background:#f0f3fa;color:#43516a}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}
+.info{background:#f7f8fc;border-radius:10px;padding:11px}.info label{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}.info strong{font-size:13px;overflow-wrap:anywhere}
+.config{font-family:ui-monospace,SFMono-Regular,monospace;font-size:13px;line-height:1.8;overflow-wrap:anywhere;color:#354c9a}
+.panel-title{font-size:13px;font-weight:800;margin:0 0 12px}.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.empty{min-height:180px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:13px}
+footer{text-align:center;color:#8994a7;font-size:11px;padding:20px}
+@media(max-width:760px){.detail{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr 1fr}header{padding-top:22px}}
+
+.app{--bg:#f5f7fb;--ink:#18243b;--muted:#718096;--line:#e5eaf2;--faded:#edf0f5;min-height:100vh;color:var(--ink);background:var(--bg);padding:22px clamp(12px,2vw,28px) 0;transition:background .2s,color .2s}
+.app.dark{--bg:#111827;--ink:#e8edf8;--muted:#a3afc2;--line:#344155;--faded:#283448}
+.app .toolbar{margin-bottom:14px}.app .search,.app .panel,.app .legend-btn{background:var(--surface,white);color:var(--ink);border-color:var(--line)}
+.app.dark .search,.app.dark .legend-btn{background:#1c2738}
+.theme-btn{border:1px solid var(--line);border-radius:11px;padding:11px 14px;background:#5267df;color:white;font-weight:700;cursor:pointer}
+.legend{gap:7px}.legend-btn{border:1px solid var(--line);border-radius:18px;padding:7px 10px;font-size:11px;cursor:pointer}.legend-btn.active{outline:2px solid #5267df;font-weight:800}
+.filter-note,.legend-foot{font-size:11px;color:var(--muted);margin:0 0 9px}.legend-foot{margin-top:3px}
+.periodic{grid-template-rows:repeat(7,96px)}.element{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;border:1px solid #ffffffaa}.element .num{font-size:9px}.element .symbol{font-size:20px;margin:0}.element .ename{font-size:9px}.element .mass{font-size:8px;margin-top:3px}.element .charge{font-size:8px;opacity:.75}
+.app.dark .element{color:#18243b}.app.dark .placeholder{background:#1c2738;color:#c2cce0;border-color:#536078}
+.modal-backdrop{position:fixed;inset:0;background:#0b1426a8;z-index:20;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.modal{position:relative;width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 24px 80px #0005;animation:pop .18s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.close{position:absolute;right:15px;top:12px;border:0;background:transparent;color:var(--muted);font-size:28px;cursor:pointer}
+.modal-top{display:flex;align-items:center;gap:16px;padding-right:28px;margin-bottom:18px}.big-symbol{width:82px;height:82px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#24334b;flex-shrink:0}.big-symbol strong{font-size:38px}.big-symbol small{font-size:10px}.eyebrow-modal{font-size:10px;letter-spacing:1.5px;color:var(--muted);font-weight:800}.modal h2{font-size:26px;margin:4px 0 7px}.category-tag{font-size:11px;color:var(--muted)}
+.modal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.modal .info{background:var(--surface,#f0f3f8);border:1px solid var(--line)}.modal .info label{font-size:10px;color:var(--muted)}.modal .info strong{font-size:13px;color:var(--ink)}
+.modal-lower{display:grid;grid-template-columns:1.1fr 1fr;gap:15px;margin-top:16px}.atom-panel,.config-panel{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--surface,white)}.modal h3{font-size:11px;letter-spacing:1px;margin:0 0 10px;color:var(--muted)}
+.atom-stage{height:260px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle,#5267df12,transparent 65%);border-radius:12px}
+.nucleus{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#ffcf76,#e26b4f 75%);color:#40261e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;box-shadow:0 0 18px #f08a5c66}.nucleus b{font-size:13px}.nucleus small{font-size:8px}
+.orbit{position:absolute;border:1px solid #8194ce99;border-radius:50%;animation:spin linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.electron{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#5275ee;box-shadow:0 0 7px #5275ee99}
+.shell-labels{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.shell-labels span{font-size:10px;padding:5px 7px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--muted)}
+.config{font-family:ui-monospace,monospace;font-size:13px;line-height:1.8;overflow-wrap:anywhere;color:#6678e5;margin-bottom:18px}.app.dark .config{color:#a9b6ff}
+.modal .hint{font-size:11px;line-height:1.55;color:var(--muted)}
+@media(max-width:700px){.modal{padding:17px}.modal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-lower{grid-template-columns:1fr}.atom-stage{height:230px}.periodic{grid-template-rows:repeat(7,92px)}}
+
+
+/* Ô nguyên tố theo bố cục trong ảnh tham khảo */
+.element{padding:5px 5px 4px;gap:1px}
+.element-meta{display:flex;align-items:center;justify-content:space-between;gap:2px;min-height:12px}
+.element .num{font-size:9px;text-align:left;opacity:1;font-weight:700}
+.element .mass{font-size:8px;text-align:right;opacity:1;white-space:nowrap;margin:0}
+.element .symbol{font-size:clamp(17px,1.55vw,23px);font-weight:800;line-height:1.05;margin:2px 0 0}
+.element .ename{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.element .mini-config{font-size:clamp(6px,.62vw,8px);line-height:1.15;margin-top:auto;white-space:nowrap;overflow:hidden;letter-spacing:-.25px}
+.app.dark .element{color:#172033}
+.app.dark .element .num,.app.dark .element .mass,.app.dark .element .ename,.app.dark .element .mini-config{color:#172033}
+.app.dark .modal .info{background:#202c40}
+.app.dark .atom-panel,.app.dark .config-panel{background:#1b2638}
+.app.dark .qr-placeholder{background:#202c40;border-color:#65748b;color:#e8edf8}
+.qr-section{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:16px;padding:14px;border:1px dashed var(--line);border-radius:14px;background:var(--surface,white)}
+.qr-section h3{margin:0 0 7px}
+.qr-section .hint{margin:0}
+.qr-placeholder{width:116px;height:116px;flex-shrink:0;border:2px dashed #9aa8bd;border-radius:10px;display:grid;place-items:center;text-align:center;padding:10px;color:#718096;font-size:10px;font-weight:800;background:#f7f8fc}
+@media(max-width:700px){.qr-section{align-items:flex-start;flex-direction:column}.qr-placeholder{width:104px;height:104px}}
+.qr-upload{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:10px 14px;border:0;border-radius:10px;background:#5267df;color:#fff;font-size:12px;font-weight:800;cursor:pointer}
+.qr-upload:hover{background:#4055c9}
+.qr-preview{width:116px;height:116px;object-fit:contain;flex-shrink:0;border:1px solid var(--line);border-radius:10px;background:#fff;padding:5px}
+.qr-actions{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.qr-remove{border:0;background:transparent;color:#d15b5b;font-size:11px;cursor:pointer;padding:4px 0}
+\n</style>
+</head>
+<body>
+<header><div class="eyebrow">Chemistry • Interactive learning</div><h1>Bảng tuần hoàn hóa học</h1><p class="sub">Khám phá 118 nguyên tố — chọn một ô để tìm hiểu thông tin chi tiết.</p></header>
+<main><div id="root"></div></main>
+<script type="text/babel">
+const raw = [
+["H","Hydro",1,1],["He","Heli",18,1],
+["Li","Liti",1,2],["Be","Beri",2,2],["B","Bo",13,2],["C","Cacbon",14,2],["N","Nitơ",15,2],["O","Oxi",16,2],["F","Flo",17,2],["Ne","Neon",18,2],
+["Na","Natri",1,3],["Mg","Magie",2,3],["Al","Nhôm",13,3],["Si","Silic",14,3],["P","Photpho",15,3],["S","Lưu huỳnh",16,3],["Cl","Clo",17,3],["Ar","Argon",18,3],
+["K","Kali",1,4],["Ca","Canxi",2,4],["Sc","Scandi",3,4],["Ti","Titan",4,4],["V","Vanadi",5,4],["Cr","Crom",6,4],["Mn","Mangan",7,4],["Fe","Sắt",8,4],["Co","Coban",9,4],["Ni","Niken",10,4],["Cu","Đồng",11,4],["Zn","Kẽm",12,4],["Ga","Gali",13,4],["Ge","Gecmani",14,4],["As","Asen",15,4],["Se","Selen",16,4],["Br","Brom",17,4],["Kr","Krypton",18,4],
+["Rb","Rubidi",1,5],["Sr","Stronti",2,5],["Y","Ytri",3,5],["Zr","Zirconi",4,5],["Nb","Niobi",5,5],["Mo","Molypden",6,5],["Tc","Tecneti",7,5],["Ru","Rutheni",8,5],["Rh","Rodi",9,5],["Pd","Paladi",10,5],["Ag","Bạc",11,5],["Cd","Cadimi",12,5],["In","Indi",13,5],["Sn","Thiếc",14,5],["Sb","Antimon",15,5],["Te","Telua",16,5],["I","Iốt",17,5],["Xe","Xenon",18,5],
+["Cs","Xesi",1,6],["Ba","Bari",2,6],["La","Lantan",3,6],["Hf","Hafni",4,6],["Ta","Tantan",5,6],["W","Vonfram",6,6],["Re","Rheni",7,6],["Os","Osmi",8,6],["Ir","Iridi",9,6],["Pt","Platin",10,6],["Au","Vàng",11,6],["Hg","Thủy ngân",12,6],["Tl","Tali",13,6],["Pb","Chì",14,6],["Bi","Bitmut",15,6],["Po","Poloni",16,6],["At","Astatin",17,6],["Rn","Radon",18,6],
+["Fr","Franxi",1,7],["Ra","Radi",2,7],["Ac","Actini",3,7],["Rf","Rutherfordi",4,7],["Db","Dubni",5,7],["Sg","Seaborgi",6,7],["Bh","Bohri",7,7],["Hs","Hassi",8,7],["Mt","Meitneri",9,7],["Ds","Darmstadti",10,7],["Rg","Roentgeni",11,7],["Cn","Copernixi",12,7],["Nh","Nihoni",13,7],["Fl","Flerovi",14,7],["Mc","Moscovi",15,7],["Lv","Livermori",16,7],["Ts","Tennessine",17,7],["Og","Oganesson",18,7],
+["Ce","Xeri",3,8],["Pr","Praseodymi",4,8],["Nd","Neodymi",5,8],["Pm","Promethi",6,8],["Sm","Samari",7,8],["Eu","Europi",8,8],["Gd","Gadolini",9,8],["Tb","Terbi",10,8],["Dy","Dysprosi",11,8],["Ho","Holmi",12,8],["Er","Erbi",13,8],["Tm","Thuli",14,8],["Yb","Yterbi",15,8],["Lu","Luteti",16,8],
+["Th","Thori",3,9],["Pa","Protactini",4,9],["U","Urani",5,9],["Np","Neptuni",6,9],["Pu","Plutoni",7,9],["Am","Americi",8,9],["Cm","Curi",9,9],["Bk","Berkeli",10,9],["Cf","Californi",11,9],["Es","Einsteini",12,9],["Fm","Fermi",13,9],["Md","Mendelevi",14,9],["No","Nobeli",15,9],["Lr","Lawrenci",16,9]
+];
+const symbols=raw.map(x=>x[0]);
+const englishNames = ["Hydrogen","Helium","Lithium","Beryllium","Boron","Carbon","Nitrogen","Oxygen","Fluorine","Neon","Sodium","Magnesium","Aluminium","Silicon","Phosphorus","Sulfur","Chlorine","Argon","Potassium","Calcium","Scandium","Titanium","Vanadium","Chromium","Manganese","Iron","Cobalt","Nickel","Copper","Zinc","Gallium","Germanium","Arsenic","Selenium","Bromine","Krypton","Rubidium","Strontium","Yttrium","Zirconium","Niobium","Molybdenum","Technetium","Ruthenium","Rhodium","Palladium","Silver","Cadmium","Indium","Tin","Antimony","Tellurium","Iodine","Xenon","Caesium","Barium","Lanthanum","Hafnium","Tantalum","Tungsten","Rhenium","Osmium","Iridium","Platinum","Gold","Mercury","Thallium","Lead","Bismuth","Polonium","Astatine","Radon","Francium","Radium","Actinium","Rutherfordium","Dubnium","Seaborgium","Bohrium","Hassium","Meitnerium","Darmstadtium","Roentgenium","Copernicium","Nihonium","Flerovium","Moscovium","Livermorium","Tennessine","Oganesson","Cerium","Praseodymium","Neodymium","Promethium","Samarium","Europium","Gadolinium","Terbium","Dysprosium","Holmium","Erbium","Thulium","Ytterbium","Lutetium","Thorium","Protactinium","Uranium","Neptunium","Plutonium","Americium","Curium","Berkelium","Californium","Einsteinium","Fermium","Mendelevium","Nobelium","Lawrencium"];
+const category=(z,g)=>{
+ if([2,10,18,36,54,86,118].includes(z))return "Khí hiếm";
+ if([9,17,35,53,85,117].includes(z))return "Halogen";
+ if([3,11,19,37,55,87].includes(z))return "Kim loại kiềm";
+ if([4,12,20,38,56,88].includes(z))return "Kim loại kiềm thổ";
+ if((z>=57&&z<=71)||(z>=89&&z<=103))return z<=71?"Họ Lantan":"Họ Actini";
+ if(g>=3&&g<=12)return "Kim loại chuyển tiếp";
+ if([5,14,32,33,51,52,84].includes(z))return "Á kim";
+ if([1,6,7,8,15,16,34].includes(z))return "Phi kim";
+ return "Kim loại khác";
+};
+const colors={"Khí hiếm":"#d9d8ff","Halogen":"#c9e9fb","Kim loại kiềm":"#ffd7d2","Kim loại kiềm thổ":"#ffe8bd","Kim loại chuyển tiếp":"#d4e9d7","Họ Lantan":"#f7d9ed","Họ Actini":"#f5d9d1","Á kim":"#d8e8c8","Phi kim":"#fff0b8","Kim loại khác":"#d9e4f5"};
+const orbitals=[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",6]];
+function electronConfig(z){
+ const exceptions={24:"[Ar] 3d⁵ 4s¹",29:"[Ar] 3d¹⁰ 4s¹",41:"[Kr] 4d⁴ 5s¹",42:"[Kr] 4d⁵ 5s¹",44:"[Kr] 4d⁷ 5s¹",45:"[Kr] 4d⁸ 5s¹",46:"[Kr] 4d¹⁰",47:"[Kr] 4d¹⁰ 5s¹",78:"[Xe] 4f¹⁴ 5d⁹ 6s¹",79:"[Xe] 4f¹⁴ 5d¹⁰ 6s¹"};
+ if(exceptions[z])return exceptions[z];
+ let n=z, parts=[];
+ for(const [orb,cap] of orbitals){if(n<=0)break;const k=Math.min(n,cap);parts.push(orb+(k>1?"⁰¹²³⁴⁵⁶⁷⁸⁹"[k]:"¹"));n-=k;}
+ return parts.join(" ");
+}
+function compactElectronConfig(z){
+ const noble=[{z:86,label:"[Rn]"},{z:54,label:"[Xe]"},{z:36,label:"[Kr]"},{z:18,label:"[Ar]"},{z:10,label:"[Ne]"},{z:2,label:"[He]"}].find(x=>z>x.z);
+ if(!noble)return electronConfig(z);
+ const special={24:"[Ar] 3d⁵ 4s¹",29:"[Ar] 3d¹⁰ 4s¹",41:"[Kr] 4d⁴ 5s¹",42:"[Kr] 4d⁵ 5s¹",44:"[Kr] 4d⁷ 5s¹",45:"[Kr] 4d⁸ 5s¹",46:"[Kr] 4d¹⁰",47:"[Kr] 4d¹⁰ 5s¹",78:"[Xe] 4f¹⁴ 5d⁹ 6s¹",79:"[Xe] 4f¹⁴ 5d¹⁰ 6s¹"};
+ if(special[z])return special[z];
+ let left=z, counts={};
+ for(const [orb,cap] of orbitals){if(left<=0)break;const n=Math.min(left,cap);counts[orb]=n;left-=n;}
+ left=noble.z;const core={};
+ for(const [orb,cap] of orbitals){if(left<=0)break;const n=Math.min(left,cap);core[orb]=n;left-=n;}
+ const sup="⁰¹²³⁴⁵⁶⁷⁸⁹";
+ const rest=orbitals.map(([orb])=>[orb,(counts[orb]||0)-(core[orb]||0)]).filter(x=>x[1]>0).map(([orb,n])=>orb+(n>1?sup[n]:"¹"));
+ return [noble.label,...rest].join(" ");
+}
+function massLabel(z){
+ const v=masses[z-1];
+ const three=[1,2,7,8,9,11,24,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86];
+ return (three.includes(z)?v.toFixed(3):v.toFixed(2)).replace(/\\.?0+$/,"");
+}
+const supers={1:"¹",2:"²",3:"³",4:"⁴",5:"⁵",6:"⁶",7:"⁷",8:"⁸",9:"⁹",10:"¹⁰",11:"¹¹",12:"¹²",13:"¹³",14:"¹⁴"};
+function phase(z){if([2,10,18,36,54,86,118].includes(z)||[1,7,8,9,17].includes(z))return "Khí";if(z===35||z===80)return "Lỏng";return "Rắn (ở 25°C)";}
+const elements=raw.map((x,i)=>({z:i+1,symbol:x[0],name:x[1],english:englishNames[i],group:x[2],period:x[3],category:category(i+1,x[2]),phase:phase(i+1)}));
+
+const masses = [1.008,4.0026,6.94,9.0122,10.81,12.011,14.007,15.999,18.998,20.180,22.990,24.305,26.982,28.085,30.974,32.06,35.45,39.948,39.098,40.078,44.956,47.867,50.942,51.996,54.938,55.845,58.933,58.693,63.546,65.38,69.723,72.630,74.922,78.971,79.904,83.798,85.468,87.62,88.906,91.224,92.906,95.95,98,101.07,102.91,106.42,107.87,112.41,114.82,118.71,121.76,127.60,126.90,131.29,132.91,137.33,138.91,140.12,140.91,144.24,145,150.36,151.96,157.25,158.93,162.50,164.93,167.26,168.93,173.05,174.97,178.49,180.95,183.84,186.21,190.23,192.22,195.08,196.97,200.59,204.38,207.2,208.98,209,210,222,223,226,227,267,270,269,278,281,282,285,286,289,290,293,294,294,294,294,294,294,294,294,294,294,294,294,294,294,294,294,294,294];
+const shellFill = [[1,2],[2,2],[2,6],[3,2],[3,6],[4,2],[3,10],[4,6],[5,2],[4,10],[5,6],[6,2],[4,14],[5,10],[6,6],[7,2],[5,14],[6,10],[7,6]];
+function getShells(z){
+ let left=z, counts={};
+ for(const [n,cap] of shellFill){if(left<=0)break;const used=Math.min(left,cap);counts[n]=(counts[n]||0)+used;left-=used;}
+ return Object.entries(counts).map(([n,count])=>({n:Number(n),count}));
+}
+function App(){
+ const [selected,setSelected]=React.useState(elements[0]);
+ const [query,setQuery]=React.useState("");
+ const [categoryFilter,setCategoryFilter]=React.useState("Tất cả");
+ const [dark,setDark]=React.useState(false);
+ const [modal,setModal]=React.useState(false);
+ const [qrImages,setQrImages]=React.useState({});
+ const filtered=elements.filter(e=>(e.name+" "+e.symbol+" "+e.z).toLowerCase().includes(query.toLowerCase())&&(categoryFilter==="Tất cả"||e.category===categoryFilter));
+ const visible=new Set(filtered.map(e=>e.z));
+ const selectedColor=colors[selected.category];
+ const choose=e=>{setSelected(e);setModal(true)};
+ const uploadQR=e=>{
+   const file=e.target.files&&e.target.files[0];
+   if(!file)return;
+   if(!file.type.startsWith("image/")){alert("Vui lòng chọn một tệp hình ảnh.");e.target.value="";return;}
+   const reader=new FileReader();
+   reader.onload=()=>setQrImages(prev=>({...prev,[selected.z]:reader.result}));
+   reader.readAsDataURL(file);
+   e.target.value="";
+ };
+ const shellData=getShells(selected.z);
+ const categories=["Tất cả",...Object.keys(colors)];
+ return <div className={dark?"app dark":"app"}>
+ <div className="toolbar"><input className="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="⌕  Tìm theo tên, ký hiệu hoặc số hiệu nguyên tử..."/><button className="theme-btn" onClick={()=>setDark(!dark)}>{dark?"☀ Chế độ sáng":"☾ Chế độ tối"}</button><span className="muted">{filtered.length}/118 nguyên tố</span></div>
+ <div className="legend">{categories.map(name=><button key={name} className={"legend-btn "+(categoryFilter===name?"active":"")} onClick={()=>setCategoryFilter(name)}>{name!=="Tất cả"&&<i className="dot" style={{background:colors[name]}}/>}{name}</button>)}</div>
+ <div className="filter-note">{categoryFilter==="Tất cả"?"Chọn một nguyên tố để mở cửa sổ thông tin.":`Đang lọc: ${categoryFilter} · ${filtered.length} nguyên tố`}</div>
+ <div className="table-wrap"><div className="periodic">
+ {elements.filter(e=>e.period<=7).map(e=><button key={e.z} className={"element "+(selected.z===e.z?"selected":"")} onClick={()=>choose(e)} title={`${e.name} · ${e.category}`} style={{gridColumn:e.group,gridRow:e.period,background:visible.has(e.z)?colors[e.category]:"var(--faded)",opacity:visible.has(e.z)?1:.17}}><div className="element-meta"><div className="num">{e.z}</div><div className="mass">{massLabel(e.z)}</div></div><div className="symbol">{e.symbol}</div><div className="ename">{e.name}</div><div className="mini-config">{compactElectronConfig(e.z)}</div></button>)}
+ <div className="placeholder" style={{gridColumn:"1 / span 2",gridRow:8}}>Họ Lantan<br/>57–71</div><div className="placeholder" style={{gridColumn:"1 / span 2",gridRow:9}}>Họ Actini<br/>89–103</div>
+ {elements.filter(e=>e.period>=8).map(e=><button key={e.z} className={"element "+(selected.z===e.z?"selected":"")} onClick={()=>choose(e)} title={e.name} style={{gridColumn:e.group+2,gridRow:e.period,background:visible.has(e.z)?colors[e.category]:"var(--faded)",opacity:visible.has(e.z)?1:.17}}><div className="element-meta"><div className="num">{e.z}</div><div className="mass">{massLabel(e.z)}</div></div><div className="symbol">{e.symbol}</div><div className="ename">{e.name}</div><div className="mini-config">{compactElectronConfig(e.z)}</div></button>)}
+ </div></div>
+ <div className="legend-foot">Số hiệu nguyên tử · Nguyên tử khối trung bình (u) · Cấu hình electron thu gọn</div>
+ {modal&&<div className="modal-backdrop" onClick={()=>setModal(false)}><section className="modal" onClick={e=>e.stopPropagation()}>
+ <button className="close" onClick={()=>setModal(false)} aria-label="Đóng">×</button>
+ <div className="modal-top"><div className="big-symbol" style={{background:selectedColor}}><strong>{selected.symbol}</strong><small>Số hiệu {selected.z}</small></div><div><div className="eyebrow-modal">NGUYÊN TỐ HÓA HỌC</div><h2>{selected.name}</h2><span className="category-tag">{selected.category}</span></div></div>
+ <div className="modal-grid"><div className="info"><label>Tên tiếng Anh</label><strong>{selected.english}</strong></div><div className="info"><label>Nguyên tử khối trung bình</label><strong>{massLabel(selected.z)} u</strong></div><div className="info"><label>Nhóm</label><strong>{selected.group}</strong></div><div className="info"><label>Chu kì</label><strong>{selected.period>7?(selected.period===8?6:7):selected.period}</strong></div><div className="info"><label>Trạng thái ở 25°C</label><strong>{selected.phase}</strong></div><div className="info"><label>Số electron (nguyên tử trung hòa)</label><strong>{selected.z}</strong></div></div>
+ <div className="qr-section">
+  <div>
+   <h3>MÃ QR CỦA NGUYÊN TỐ</h3>
+   <p className="hint">Thêm ảnh mã QR để lưu cùng thông tin của {selected.name}. Bạn có thể đổi ảnh bất cứ lúc nào.</p>
+   <label className="qr-upload" htmlFor="qr-image-upload">＋ Tải mã QR lên</label>
+   <input id="qr-image-upload" type="file" accept="image/*" onChange={uploadQR} style={{display:"none"}} />
+  </div>
+  {qrImages[selected.z]?
+   <div className="qr-actions"><img className="qr-preview" src={qrImages[selected.z]} alt={`Mã QR của ${selected.name}`}/><button className="qr-remove" onClick={()=>setQrImages(prev=>{const next={...prev};delete next[selected.z];return next})}>Xóa ảnh QR</button></div>:
+   <div className="qr-placeholder">Chưa có ảnh QR</div>}
+ </div>
+ <div className="modal-lower"><div className="atom-panel"><h3>MÔ HÌNH NGUYÊN TỬ BOHR</h3><div className="atom-stage"><div className="nucleus"><b>{selected.symbol}</b><small>{selected.z}p</small></div>{shellData.map((sh,i)=><div key={sh.n} className="orbit" style={{width:104+i*48,height:104+i*48,animationDuration:`${7+i*3}s`}}>{Array.from({length:Math.min(sh.count,8)}).map((_,j)=><i key={j} className="electron" style={{transform:`translate(-50%,-50%) rotate(${j*360/Math.min(sh.count,8)}deg) translateY(-${52+i*24}px)`}}/>)}</div>)}</div><div className="shell-labels">{shellData.map(sh=><span key={sh.n}>Lớp {sh.n}: <b>{sh.count}e</b></span>)}</div><p className="hint">Mô hình minh họa các lớp electron; số chấm trên mỗi vòng được giới hạn để hình dễ quan sát.</p></div>
+ <div className="config-panel"><h3>CẤU HÌNH ELECTRON</h3><div className="config">{compactElectronConfig(selected.z)}</div><h3>THÔNG TIN VỊ TRÍ</h3><p className="hint">{selected.name} thuộc nhóm {selected.group}, chu kì {selected.period>7?(selected.period===8?6:7):selected.period}, được xếp vào nhóm {selected.category.toLowerCase()}.</p></div></div>
+ </section></div>}
+ <footer>Dự án học tập • Bảng tuần hoàn hóa học tương tác</footer></div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body></html>
